@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apimdb
 // @description  Redirect API responses to a preferred video host.
-// @version      1.0.0
+// @version      1.1.0
 // @match        *://apimdb.net/e/movie/*
 // @match        *://*.apimdb.net/e/movie/*
 // @match        *://apimdb.net/e/tv/*
@@ -22,6 +22,7 @@
 
 var user_options = {
   "redirect_embedded_iframes": false,
+  "redirect_countdown_secs":   5,
 
   "preferred_video_hosts": [
     "/downloadS/voe/",
@@ -35,6 +36,50 @@ var should_redirect = function() {
   var is_top = (unsafeWindow.window === unsafeWindow.top)
 
   return is_top || user_options.redirect_embedded_iframes
+}
+
+var process_redirect = function(url) {
+  var time_remaining = user_options.redirect_countdown_secs
+  var div, cancel_button, ticker, timer
+
+  if (!time_remaining) {
+    unsafeWindow.window.location = url
+  }
+  else {
+    div = unsafeWindow.document.createElement('div')
+    div.innerHTML = '<button>Cancel</button> page redirect in <span>' + time_remaining + '</span> seconds..'
+    cancel_button = div.querySelector('button')
+    ticker        = div.querySelector('span')
+
+    cancel_button.addEventListener('click', function(e){
+      clearInterval(timer)
+      div.style.display = 'none'
+    })
+
+    timer = setInterval(
+      function(){
+        time_remaining--
+
+        if (time_remaining > 0) {
+          ticker.innerHTML = '' + time_remaining
+        }
+        else {
+          clearInterval(timer)
+          unsafeWindow.window.location = url
+        }
+      },
+      1000
+    )
+
+    div.style.position        = 'absolute'
+    div.style.top             = '0'
+    div.style.right           = '0'
+    div.style.padding         = '20px'
+    div.style.backgroundColor = '#eee'
+    div.style.color           = '#333'
+
+    unsafeWindow.document.body.appendChild(div)
+  }
 }
 
 var init = function() {
@@ -58,7 +103,7 @@ var init = function() {
       url = urls[i2]
 
       if (url.indexOf(fav) !== -1) {
-        unsafeWindow.window.location = url
+        process_redirect(url)
         return
       }
     }
