@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apimdb
 // @description  Redirect API responses to a preferred video host.
-// @version      1.1.2
+// @version      1.1.3
 // @match        *://apimdb.net/*
 // @match        *://*.apimdb.net/*
 // @icon         https://v2.apimdb.net/static/home/images/favicon.png
@@ -24,8 +24,20 @@ var user_options = {
 
   "preferred_video_hosts": [
     "://voe.sx/",
-    "/downloadS/voe/",
-    "/playS/voe/"
+    "/downloadS/voe",
+    "/playS/voe",
+
+    "://dood.watch/",
+    "/downloadS/doodstream",
+    "/playS/doodstream",
+
+    "://mixdrop.co/",
+    "/downloadS/mixdrop",
+    "/playS/mixdrop",
+
+    "://vidembed.cc/",
+    "/downloadS/vidcloud",
+    "/playS/vidcloud"
   ]
 }
 
