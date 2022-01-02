@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         Apimdb
 // @description  Redirect API responses to a preferred video host.
-// @version      1.1.1
+// @version      1.1.2
 // @match        *://apimdb.net/*
 // @match        *://*.apimdb.net/*
 // @icon         https://v2.apimdb.net/static/home/images/favicon.png
@@ -29,23 +29,25 @@ var user_options = {
   ]
 }
 
-// -----------------------------------------------------------------------------
+// ----------------------------------------------------------------------------- URL redirect
 
-var should_process_page = function() {
-  var path         = unsafeWindow.location.pathname
-  var path_allowed = new RegExp('^/(?:e/movie|e/tv|playS|downloadS)/')
+var redirect_to_url = function(url) {
+  if (!url) return
 
-  return path_allowed.test(path)
-}
-
-var should_process_window = function() {
-  var is_top = (unsafeWindow.window === unsafeWindow.top)
-
-  return is_top || user_options.redirect_embedded_iframes
-}
-
-var should_redirect = function() {
-  return should_process_page() && should_process_window()
+  if (typeof GM_loadUrl === 'function') {
+    if ((url[0] === '/') && (typeof GM_resolveUrl === 'function'))
+      url = GM_resolveUrl(url, unsafeWindow.location.href)
+    if (url.indexOf('http') === 0)
+      GM_loadUrl(url, 'Referer', unsafeWindow.location.href)
+  }
+  else {
+    try {
+      unsafeWindow.top.location = url
+    }
+    catch(e) {
+      unsafeWindow.window.location = url
+    }
+  }
 }
 
 var process_redirect = function(url) {
@@ -53,7 +55,7 @@ var process_redirect = function(url) {
   var div, cancel_button, ticker, timer
 
   if (!time_remaining) {
-    unsafeWindow.window.location = url
+    redirect_to_url(url)
   }
   else {
     div = unsafeWindow.document.createElement('div')
@@ -75,7 +77,7 @@ var process_redirect = function(url) {
         }
         else {
           clearInterval(timer)
-          unsafeWindow.window.location = url
+          redirect_to_url(url)
         }
       },
       1000
@@ -90,6 +92,25 @@ var process_redirect = function(url) {
 
     unsafeWindow.document.body.appendChild(div)
   }
+}
+
+// ----------------------------------------------------------------------------- bootstrap
+
+var should_process_page = function() {
+  var path         = unsafeWindow.location.pathname
+  var path_allowed = new RegExp('^/(?:e/movie|e/tv|playS|downloadS)/')
+
+  return path_allowed.test(path)
+}
+
+var should_process_window = function() {
+  var is_top = (unsafeWindow.window === unsafeWindow.top)
+
+  return is_top || user_options.redirect_embedded_iframes
+}
+
+var should_redirect = function() {
+  return should_process_page() && should_process_window()
 }
 
 var init = function() {
