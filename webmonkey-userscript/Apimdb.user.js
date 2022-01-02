@@ -1,11 +1,9 @@
 // ==UserScript==
 // @name         Apimdb
 // @description  Redirect API responses to a preferred video host.
-// @version      1.1.0
-// @match        *://apimdb.net/e/movie/*
-// @match        *://*.apimdb.net/e/movie/*
-// @match        *://apimdb.net/e/tv/*
-// @match        *://*.apimdb.net/e/tv/*
+// @version      1.1.1
+// @match        *://apimdb.net/*
+// @match        *://*.apimdb.net/*
 // @icon         https://v2.apimdb.net/static/home/images/favicon.png
 // @run-at       document-end
 // @grant        unsafeWindow
@@ -25,6 +23,7 @@ var user_options = {
   "redirect_countdown_secs":   5,
 
   "preferred_video_hosts": [
+    "://voe.sx/",
     "/downloadS/voe/",
     "/playS/voe/"
   ]
@@ -32,10 +31,21 @@ var user_options = {
 
 // -----------------------------------------------------------------------------
 
-var should_redirect = function() {
+var should_process_page = function() {
+  var path         = unsafeWindow.location.pathname
+  var path_allowed = new RegExp('^/(?:e/movie|e/tv|playS|downloadS)/')
+
+  return path_allowed.test(path)
+}
+
+var should_process_window = function() {
   var is_top = (unsafeWindow.window === unsafeWindow.top)
 
   return is_top || user_options.redirect_embedded_iframes
+}
+
+var should_redirect = function() {
+  return should_process_page() && should_process_window()
 }
 
 var process_redirect = function(url) {
@@ -86,14 +96,19 @@ var init = function() {
   var urls = []
   var matches, fav, url
 
-  matches = unsafeWindow.document.querySelectorAll('a[href^="/downloadS/"]')
+  matches = unsafeWindow.document.querySelectorAll('a[href]')
   matches = Array.prototype.slice.call(matches, 0)
   matches = matches.map(function(el){return el.getAttribute('href')})
   urls    = urls.concat(matches)
 
-  matches = unsafeWindow.document.querySelectorAll('div.server[data-src^="/playS/"]')
+  matches = unsafeWindow.document.querySelectorAll('div.server[data-src]')
   matches = Array.prototype.slice.call(matches, 0)
   matches = matches.map(function(el){return el.getAttribute('data-src')})
+  urls    = urls.concat(matches)
+
+  matches = unsafeWindow.document.querySelectorAll('iframe[allowfullscreen][src]')
+  matches = Array.prototype.slice.call(matches, 0)
+  matches = matches.map(function(el){return el.getAttribute('src')})
   urls    = urls.concat(matches)
 
   for (var i1=0; i1 < user_options.preferred_video_hosts.length; i1++) {
