@@ -5,27 +5,13 @@
 * the [Tampermonkey](https://chrome.google.com/webstore/detail/tampermonkey/dhdgffkkebhmkfjojejmpbldmpobfkfo) web browser extension for Chrome/Chromium
 
 Its purpose is to:
-* redirect API responses to a preferred video host
-  - the user can configure an ordered list of substrings to match against URLs in the API response
-  - the page redirects to the first matching URL
-  - the page does nothing if there are no matches
-* the default list of substrings are configured to only redirect to the video hosts:
-  1. [VOE](https://voe.sx/)
-     - format: HLS and MP4
-     - protection: none
-     - userscript: [crx-VOE](https://github.com/warren-bank/crx-VOE/tree/webmonkey-userscript/es5) redirects videos to an external player
-  2. [DoodStream](https://doodstream.com/)
-     - format: MP4
-     - protection: none
-     - userscript: [crx-DoodStream](https://github.com/warren-bank/crx-DoodStream/tree/webmonkey-userscript/es5) redirects videos to an external player
-  3. [MixDrop](https://mixdrop.co/)
-     - format: MP4
-     - protection: `Referer` header
-     - userscript: [crx-MixDrop](https://github.com/warren-bank/crx-MixDrop/tree/webmonkey-userscript/es5) redirects videos to an external player
-  4. [Vidcloud](https://vidembed.io/)
-     - format: MP4
-     - protection: none
-     - userscript: [crx-Vidcloud](https://github.com/warren-bank/crx-Vidcloud/tree/webmonkey-userscript/es5) redirects videos to an external player
+* rewrite API responses
+  - replace entire UI with a simple list of the available video hosts
+  - when a video host in this list is clicked..
+    * in _WebMonkey_:
+      - redirect the top window to a page on the website for chosen video host that contains a video player
+    * otherwise:
+      - load this page in an iframe
 
 #### Legal:
 
